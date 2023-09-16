@@ -43,7 +43,7 @@ def main():
         
 
         master_prompt = prompt_1 + "\n" + prompt_2 + "\n" + base_prompt
-        st.write(master_prompt)
+        # st.write(master_prompt)
 
         api_response = openai_call(master_prompt)
         print(api_response)
