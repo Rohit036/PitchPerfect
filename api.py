@@ -6,7 +6,7 @@ import streamlit as st
 config = dotenv_values(".env")
 
 # openai.api_key = config["OPENAI_KEY"]
-openai.api_key == st.secrets["OPENAI_KEY"],
+openai.api_key = st.secrets["OPENAI_KEY"],
 
 def openai_call(input_prompt): 
     return openai.ChatCompletion.create(
