@@ -8,7 +8,7 @@ def display_questions(questions):
         st.write(q)
 
 def main():
-    st.title("Mock Interview Companion :sunglasses:")
+    st.title("PitchPerfect :sunglasses:")
 
     # Text input box
     user_text = st.text_input("Paste your work experience from your resume.:", placeholder = "Extraction from PDF coming soon.", key = "work_ex")
