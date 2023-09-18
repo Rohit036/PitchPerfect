@@ -1,12 +1,9 @@
 import os
 import openai
-from dotenv import dotenv_values
+# from dotenv import dotenv_values
 import streamlit as st
 
-config = dotenv_values(".env")
-
-# openai.api_key = config["OPENAI_KEY"]
-openai.api_key = st.secrets["OPENAI_KEY"],
+openai.api_key = st.secrets["OPENAI_KEY"]
 
 def openai_call(input_prompt): 
     return openai.ChatCompletion.create(
