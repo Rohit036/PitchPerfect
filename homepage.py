@@ -78,28 +78,30 @@ def main():
             user_jd_pdf_text = get_pdf_text(user_jd_pdf)
             user_jd = user_jd_pdf_text
 
-        work_experience_extraction_prompt = f"For the given profile which is extraction from the resume, extract the work experience/responsibilities/contributions. profile : {user_workex_pdf_text}. Put all the extracted info in nice paragraph format."
-        
+        work_experience_extraction_prompt = f"For the given profile which is extraction from the resume, extract the work experience/responsibilities/contributions. profile : {user_workex}. Put all the extracted info in nice paragraph format."
         extracted_work_ex = openai_call(work_experience_extraction_prompt)["choices"][0]["message"]["content"]
+
+        self_introduction_prompt = f"For the given profile which is extraction from the resume, summarize my profile as an introduction or elevator pitch. profile : {user_workex}. Create the elevator pitch in the first person."
+        self_introduction_prompt_response = openai_call(self_introduction_prompt)["choices"][0]["message"]["content"]        
 
         key_skills_extraction_prompt = f"For the given profile which is extraction from the resume, extract the key skills/technologies. profile : {user_workex_pdf_text}. Put the extracted skills into a list."
         extracted_skill = openai_call(key_skills_extraction_prompt)["choices"][0]["message"]["content"]
         
         # Display the inputs when the submit button is clicked
-        with st.expander("Your Profile"):            
-            st.write(f"Your experience is: {user_num_workex}")
-            st.write(f"Position interviewing for: {user_position}")
-            st.write(f"Company interviewing for: {user_company}")
+        with st.expander("**Your Profile**"):            
+            st.write(f"**Your experience is**: {user_num_workex} years.")
+            st.write(f"**Position interviewing for**: {user_position}")
+            st.write(f"**Company interviewing for**: {user_company}")
             st.markdown("""---""")
-            st.write(f"Your Work Experience :\n {extracted_work_ex}")
-            st.write(f"Your Key Skills are :\n {extracted_skill}")
+            st.write(f"**Your Elevator Pitch** :\n {self_introduction_prompt_response}")
             st.markdown("""---""")
-            st.write(f"JD :\n {user_jd}")
+            st.write(f"**Your Key Skills are** :\n {extracted_skill}")
+            # st.markdown("""---""")
+            # st.write(f"JD :\n {user_jd}")
         
         tab1, tab2, tab3, tab4, tab5 = st.tabs(services_options)
         
         with tab1:
-            st.spinner('Creating Results')
             if "About Company" in selected_services:
                 about_company_prompt = f"I am applying to {user_company} for the role of a {user_position}. I want you to provide me with key insights about the company’s vision, mission, values, any recent news and developments, and any other relevant information to prepare for my upcoming interview"
                 about_company_prompt_response = openai_call(about_company_prompt)["choices"][0]["message"]["content"]
