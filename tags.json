@@ -1,0 +1,609 @@
+{
+    "frequency": {
+        "constant": [
+            "constant"
+        ],
+        "quarterly": [
+            "quarterly"
+        ],
+        "yearly": [
+            "yearly"
+        ],
+        "weekly": [
+            "weekly"
+        ],
+        "10-day": [
+            "10-day",
+            "ten days",
+            "10 days",
+            "10 day",
+            "10-days"
+        ],
+        "monthly": [
+            "monthly"
+        ],
+        "daily": [
+            "daily"
+        ]
+    },
+    "unit_as_in_source": {
+        "10KT": [
+            "10KT"
+        ],
+        "USD/DMT": [
+            "USD/DMT"
+        ],
+        "USD/T": [
+            "USD/T"
+        ],
+        "AED": [
+            "AED"
+        ],
+        "NaN": [
+            NaN
+        ],
+        "RMB/T": [
+            "RMB/T"
+        ],
+        "KG/thm": [
+            "KG/thm"
+        ],
+        "BRL": [
+            "BRL"
+        ],
+        "KG/T": [
+            "KG/T"
+        ],
+        "USD": [
+            "USD"
+        ],
+        "RMB": [
+            "RMB"
+        ],
+        "EUR": [
+            "EUR"
+        ],
+        "CHF": [
+            "CHF"
+        ],
+        "EGP": [
+            "EGP"
+        ],
+        "JPY": [
+            "JPY"
+        ],
+        "MZN": [
+            "MZN"
+        ],
+        "TRY": [
+            "TRY"
+        ],
+        "VND": [
+            "VND"
+        ],
+        "MYR": [
+            "MYR"
+        ],
+        "EGP/T": [
+            "EGP/T"
+        ],
+        "INR/T": [
+            "INR/T"
+        ],
+        "EUR/T": [
+            "EUR/T"
+        ],
+        "AED/T": [
+            "AED/T"
+        ],
+        "RMB/WMT": [
+            "RMB/WMT"
+        ],
+        "10KT/Day": [
+            "10KT/Day"
+        ],
+        "100M RMB": [
+            "100M RMB"
+        ],
+        "PHP": [
+            "PHP"
+        ],
+        "BRL/T": [
+            "BRL/T"
+        ],
+        "JPY/T": [
+            "JPY/T"
+        ],
+        "TRY/T": [
+            "TRY/T"
+        ],
+        "KRW": [
+            "KRW"
+        ],
+        "GBP": [
+            "GBP"
+        ],
+        "USD/MT": [
+            "USD/MT"
+        ],
+        "INR/MT": [
+            "INR/MT"
+        ],
+        "EUR/MT": [
+            "EUR/MT"
+        ],
+        "RUR/T": [
+            "RUR/T"
+        ],
+        "USD/ST": [
+            "USD/ST"
+        ]
+    },
+    "indicator_source_name": {
+        "exchange": [
+            "exchange"
+        ],
+        "mysteel": [
+            "mysteel"
+        ],
+        "platts": [
+            "platts"
+        ],
+        "vale": [
+            "vale"
+        ],
+        "fastmarkets": [
+            "fastmarkets"
+        ],
+        "multisource": [
+            "multisource"
+        ],
+        "bloomberg": [
+            "bloomberg"
+        ],
+        "argus": [
+            "argus"
+        ]
+    },
+    "region_name": {
+        "australia": [
+            "australia"
+        ],
+        "north america": [
+            "north america"
+        ],
+        "southeast asia": [
+            "southeast asia"
+        ],
+        "india": [
+            "india"
+        ],
+        "china": [
+            "china"
+        ],
+        "cis": [
+            "cis"
+        ],
+        "jkt": [
+            "jkt"
+        ],
+        "global": [
+            "global"
+        ],
+        "mena": [
+            "mena"
+        ],
+        "turkey": [
+            "turkey"
+        ],
+        "south america": [
+            "south america"
+        ],
+        "europe": [
+            "europe"
+        ]
+    },
+    "indicator_type": {
+        "coal;coking coal;coke": [
+            "coal;coking coal;coke"
+        ],
+        "metallics;scrap": [
+            "metallics;scrap"
+        ],
+        "coal;pci": [
+            "coal;pci"
+        ],
+        "steel; hrc; billet; slab": [
+            "steel; hrc; billet; slab"
+        ],
+        "steel;hrc; iron ore;coal;coking coal": [
+            "steel;hrc; iron ore;coal;coking coal"
+        ],
+        "steel; rebar; pci": [
+            "steel; rebar; pci"
+        ],
+        "metallics; scrap; eaf": [
+            "metallics; scrap; eaf"
+        ],
+        "iron ore;lumps": [
+            "iron ore;lumps"
+        ],
+        "metallics;dri;hbi": [
+            "metallics;dri;hbi"
+        ],
+        "steel; rebar; billet; slab": [
+            "steel; rebar; billet; slab"
+        ],
+        "steel;rebar;eaf": [
+            "steel;rebar;eaf"
+        ],
+        "metallics;scrap;iron ore": [
+            "metallics;scrap;iron ore"
+        ],
+        "steel;billet;slab": [
+            "steel;billet;slab"
+        ],
+        "steel, eaf, metallics, scrap": [
+            "steel, eaf, metallics, scrap"
+        ],
+        "steel, coke; hrc": [
+            "steel, coke; hrc"
+        ],
+        "steel; rebar": [
+            "steel; rebar"
+        ],
+        "iron ore; lumps; pellets": [
+            "iron ore; lumps; pellets"
+        ],
+        "iron ore;sinter fines; coal;coking coal": [
+            "iron ore;sinter fines; coal;coking coal"
+        ],
+        "steel;slabs": [
+            "steel;slabs"
+        ],
+        "steel;rebar;billet": [
+            "steel;rebar;billet"
+        ],
+        "iron ore;concentrates": [
+            "iron ore;concentrates"
+        ],
+        "metallics;scrap;iron ore;pellets": [
+            "metallics;scrap;iron ore;pellets"
+        ],
+        "steel; iron ore; sinter fines": [
+            "steel; iron ore; sinter fines"
+        ],
+        "steel;metallics;pig iron": [
+            "steel;metallics;pig iron"
+        ],
+        "iron ore;coke;sinter fines": [
+            "iron ore;coke;sinter fines"
+        ],
+        "metallics;pig iron; macroeconomic; industrial": [
+            "metallics;pig iron; macroeconomic; industrial"
+        ],
+        "steel;rebar;hrc": [
+            "steel;rebar;hrc"
+        ],
+        "coke": [
+            "coke"
+        ],
+        "iron ore; concentrates": [
+            "iron ore; concentrates"
+        ],
+        "steel;metallics;billet;dri": [
+            "steel;metallics;billet;dri"
+        ],
+        "macroeconomic": [
+            "macroeconomic"
+        ],
+        "iron ore;lumps;steel;pig iron": [
+            "iron ore;lumps;steel;pig iron"
+        ],
+        "steel;metallics;rebar;scrap": [
+            "steel;metallics;rebar;scrap"
+        ],
+        "steel;plate": [
+            "steel;plate"
+        ],
+        "steel": [
+            "steel"
+        ],
+        "steel;slab;hrc": [
+            "steel;slab;hrc"
+        ],
+        "steel, eaf, metallics; dri": [
+            "steel, eaf, metallics; dri"
+        ],
+        "steel, coke; rebar": [
+            "steel, coke; rebar"
+        ],
+        "metallics;scrap;pig iron": [
+            "metallics;scrap;pig iron"
+        ],
+        "iron ore;concentrates;sinter fines": [
+            "iron ore;concentrates;sinter fines"
+        ],
+        "freight": [
+            "freight"
+        ],
+        "steel; bof; metallics; pig iron": [
+            "steel; bof; metallics; pig iron"
+        ],
+        "steel;bof": [
+            "steel;bof"
+        ],
+        "iron ore; pellets; sinter fines": [
+            "iron ore; pellets; sinter fines"
+        ],
+        "steel;eaf": [
+            "steel;eaf"
+        ],
+        "iron ore;sinter feed": [
+            "iron ore;sinter feed"
+        ],
+        "steel;crc": [
+            "steel;crc"
+        ],
+        "bunker": [
+            "bunker"
+        ],
+        "iron ore; lumps": [
+            "iron ore; lumps"
+        ],
+        "iron ore; lumps, metallics, dri": [
+            "iron ore; lumps, metallics, dri"
+        ],
+        "metallics;dri": [
+            "metallics;dri"
+        ],
+        "steel;hrc": [
+            "steel;hrc"
+        ],
+        "steel;metallics;billet;scrap": [
+            "steel;metallics;billet;scrap"
+        ],
+        "iron ore;sinter fines": [
+            "iron ore;sinter fines"
+        ],
+        "steel, coke, hrc": [
+            "steel, coke, hrc"
+        ],
+        "iron ore;sinter fines;steel;pig iron": [
+            "iron ore;sinter fines;steel;pig iron"
+        ],
+        "iron ore;pellets": [
+            "iron ore;pellets"
+        ],
+        "metallics; dri; eaf": [
+            "metallics; dri; eaf"
+        ],
+        "scrap": [
+            "scrap"
+        ],
+        "coal;coking coal": [
+            "coal;coking coal"
+        ],
+        "iron ore;sinter fines;steel": [
+            "iron ore;sinter fines;steel"
+        ],
+        "steel;wire rod": [
+            "steel;wire rod"
+        ],
+        "steel, hrc": [
+            "steel, hrc"
+        ],
+        "iron ore;pellets;steel;pig iron": [
+            "iron ore;pellets;steel;pig iron"
+        ],
+        "iron ore; sinter fines": [
+            "iron ore; sinter fines"
+        ],
+        "metallics; pig iron; eaf": [
+            "metallics; pig iron; eaf"
+        ],
+        "steel;hrc;bof": [
+            "steel;hrc;bof"
+        ],
+        "iron ore; pellets": [
+            "iron ore; pellets"
+        ],
+        "steel;rebar;bof": [
+            "steel;rebar;bof"
+        ],
+        "steel;rebar": [
+            "steel;rebar"
+        ],
+        "steel; hrc": [
+            "steel; hrc"
+        ],
+        "metallics;pig iron": [
+            "metallics;pig iron"
+        ],
+        "steel, coke": [
+            "steel, coke"
+        ],
+        "steel; coal; pci": [
+            "steel; coal; pci"
+        ],
+        "metallics;scrap;dri": [
+            "metallics;scrap;dri"
+        ],
+        "steel;billet": [
+            "steel;billet"
+        ],
+        "iron ore": [
+            "iron ore"
+        ],
+        "steel;slab": [
+            "steel;slab"
+        ],
+        "steel; hrc; pci": [
+            "steel; hrc; pci"
+        ]
+    },
+    "functionality": {
+        "prices;premium;seaborne": [
+            "prices;premium;seaborne"
+        ],
+        "prices;spreads;port;seaborne": [
+            "prices;spreads;port;seaborne"
+        ],
+        "ratios;premium": [
+            "ratios;premium"
+        ],
+        "stocks; mills": [
+            "stocks; mills"
+        ],
+        "costs;consumption": [
+            "costs;consumption"
+        ],
+        "ratios;premium;seaborne": [
+            "ratios;premium;seaborne"
+        ],
+        "spreads": [
+            "spreads"
+        ],
+        "production;ratios;mills": [
+            "production;ratios;mills"
+        ],
+        "consumption;mills": [
+            "consumption;mills"
+        ],
+        "stocks;cities": [
+            "stocks;cities"
+        ],
+        "stocks;ports": [
+            "stocks;ports"
+        ],
+        "prices;ports": [
+            "prices;ports"
+        ],
+        "sales;ports": [
+            "sales;ports"
+        ],
+        "margins;costs": [
+            "margins;costs"
+        ],
+        "production; consumption; mills": [
+            "production; consumption; mills"
+        ],
+        "spreads;costs;consumption": [
+            "spreads;costs;consumption"
+        ],
+        "industrial;financial": [
+            "industrial;financial"
+        ],
+        "consumption": [
+            "consumption"
+        ],
+        "shipments;ports": [
+            "shipments;ports"
+        ],
+        "ratios": [
+            "ratios"
+        ],
+        "costs": [
+            "costs"
+        ],
+        "prices;spreads;ports": [
+            "prices;spreads;ports"
+        ],
+        "industrial": [
+            "industrial"
+        ],
+        "ports": [
+            "ports"
+        ],
+        "stocks;mills": [
+            "stocks;mills"
+        ],
+        "prices;seaborne": [
+            "prices;seaborne"
+        ],
+        "spreads;shipments;ports": [
+            "spreads;shipments;ports"
+        ],
+        "production": [
+            "production"
+        ],
+        "prices;spreads": [
+            "prices;spreads"
+        ],
+        "spreads;seaborne;ports": [
+            "spreads;seaborne;ports"
+        ],
+        "differentials;seaborne": [
+            "differentials;seaborne"
+        ],
+        "derivatives": [
+            "derivatives"
+        ],
+        "prices;premium;ports": [
+            "prices;premium;ports"
+        ],
+        "stocks, mines": [
+            "stocks, mines"
+        ],
+        "sales": [
+            "sales"
+        ],
+        "prices;ratios": [
+            "prices;ratios"
+        ],
+        "prices;costs": [
+            "prices;costs"
+        ],
+        "production;mines": [
+            "production;mines"
+        ],
+        "stocks; cities": [
+            "stocks; cities"
+        ],
+        "stocks;mines": [
+            "stocks;mines"
+        ],
+        "margins": [
+            "margins"
+        ],
+        "spreads;stocks;ports": [
+            "spreads;stocks;ports"
+        ],
+        "prices;premiums": [
+            "prices;premiums"
+        ],
+        "margins;mills": [
+            "margins;mills"
+        ],
+        "financial;currency": [
+            "financial;currency"
+        ],
+        "spreads;costs": [
+            "spreads;costs"
+        ],
+        "sales;mills": [
+            "sales;mills"
+        ],
+        "prices": [
+            "prices"
+        ],
+        "ratios;seaborne": [
+            "ratios;seaborne"
+        ],
+        "financial": [
+            "financial"
+        ],
+        "prices; domestic": [
+            "prices; domestic"
+        ],
+        "production;mills": [
+            "production;mills"
+        ],
+        "spreads;seaborne": [
+            "spreads;seaborne"
+        ],
+        "shipments": [
+            "shipments"
+        ]
+    }
+}
