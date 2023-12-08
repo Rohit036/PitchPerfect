@@ -83,7 +83,7 @@ with st.sidebar:
 
     if tags_selection:
         filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection, tags_dict)
-        indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].to_list(), key='indicators_select')
+        indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
         selected_options = indicators_selection
     else:
         selected_options = []
