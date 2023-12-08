@@ -14,80 +14,76 @@ from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 
-with open('tags.json','r') as jf:
-    outer_dict=json.load(jf)
+# with open('tags.json','r') as jf:
+#     outer_dict=json.load(jf)
 
-csv_data=pd.read_csv('database_dict.csv')
+csv_data=pd.read_csv('all_indicators.csv')
 
-master_data = pd.read_csv("master.csv")
-master_data['DATA_DATE'] = pd.to_datetime(master_data['DATA_DATE'], format='%d-%m-%Y')
+# master_data = pd.read_csv("master.csv")
+# master_data['DATA_DATE'] = pd.to_datetime(master_data['DATA_DATE'], format='%d-%m-%Y')
+master_data = pd.read_csv("indicator_values_2020_2023.csv")
 
-import re
+# Convert the date column to datetime format if it's not already
+master_data['date'] = pd.to_datetime(master_data['date'])
 
-def extract_code_blocks(text, language=None):
+print(master_data.info())
+
+# # Drop the specified columns
+# df_dropped = base_data2.drop(['last_modified_date', 'calculated_flag'], axis=1)
+# master_data = df_dropped.dropna(subset=['value', 'date']).reset_index(drop = True)
+# master_data = master_data[master_data['date'].dt.year >= 2020]
+
+
+def filter_indicators_by_auto_tags(dataframe, tags, value_to_column):
     """
-    Extract code blocks from a given text.
+    Filter indicator names based on a list of tags, automatically determining the corresponding columns.
     
-    :param text: The text containing code blocks.
-    :param language: Optional, specify the language of the code block (e.g., 'python').
-    :return: A list of code blocks found in the text.
+    :param dataframe: Pandas DataFrame containing the data.
+    :param tags: List of tags to filter by.
+    :param value_to_column: Dictionary mapping values to their respective columns.
+    :return: DataFrame filtered by the specified criteria.
     """
-    if language:
-        pattern = r'```' + language + r'[\s\S]*?\n(.*?)```'
-    else:
-        pattern = r'```[\s\S]*?\n(.*?)```'
+    # Invert the value_to_column mapping
+    column_to_values = {}
+    for column, values in value_to_column.items():
+        for value in values:
+            column_to_values.setdefault(value, []).append(column)
 
-    code_blocks = re.findall(pattern, text, re.DOTALL)
-    return [code.strip() for code in code_blocks]
+    # Identify columns for each tag
+    filters = {}
+    for tag in tags:
+        if tag in column_to_values:
+            for column in column_to_values[tag]:
+                if column in filters:
+                    filters[column].append(tag)
+                else:
+                    filters[column] = [tag]
 
-# Adjusting the filter function to match all conditions and consider lowercase
-def filter_dataframe_all_conditions(df, criteria):
-    # Convert relevant columns to lowercase for case-insensitive matching
-    print(criteria)
-    print(df.shape)
-    for key in criteria.keys():
-        if key in df.columns and df[key].dtype == 'object':
-            df[key] = df[key].str.lower()
     # Apply filters
-    for key, values in criteria.items():
-        if values:  # Check if there are values to filter by
-            if key in df.columns:  # Check if the column exists in the DataFrame
-                # Convert values to lowercase for comparison
-                lowercase_values = [value.lower() for value in values]
-                # Filter the DataFrame based on the values
-                # df = df[df[key].isin(lowercase_values)]
-                df = df[df[key].apply(lambda x: any(value in str(x) for value in lowercase_values))]
-    print(df.shape)
-    return df
+    filtered_df = dataframe.copy()
+    for column, values in filters.items():
+        filtered_df = filtered_df[filtered_df[column].isin(values)]
 
-tags_list = []
-inner_dict = {}
-for k,v in outer_dict.items():
-    inner_dict.update(v)
-    for key,value in v.items():
-        tags_list.append(key)
+    return filtered_df
+
+tags_dict = {'frequency': ['weekly', 'daily', 'monthly', 'quarterly', 'yearly', '10-day'], 'unit_name': ['MT', '%', 'USD/DMTU', 'USD/MT', 'USD/T', 'Index', 'RMB/T', 'Units', 'BRL', 'USD', 'RMB', 'EUR', 'AED', 'CHF', 'EGP', 'JPY', 'MZN', 'TRY', 'VND', 'MYR', 'EGP/T', 'INR/T', 'EUR/T', 'AED/T', 'RMB/WMT', 'T', 'Day', 'MT/Day', 'Billion RMB', 'PHP', 'BRL/T', 'JPY/T', 'TRY/T', 'KRW', 'GBP', 'MXN', 'THB', 'IRR', 'IDR', 'SAR', 'INR', 'SGD', 'CNY', 'ARS', 'CLP', 'TWD', '10KT', 'RMB/DMTU', 'RMB/toe', 'RUR/T', 'USD/ST'], 'unit_type': ['weight', 'generic', 'currency', 'time'], 'indicator_source_name': ['Mysteel', 'Argus', 'Platts', 'Bloomberg', 'MultiSource', 'Vale', 'Fastmarkets', 'Oxford', 'Tathya'], 'tag_value': ['China', 'Iron Ore', 'Stocks', 'Concentrates', 'Mines', 'Pig iron', 'Mills', 'Production', 'Steel', 'Metallics', 'BOF', 'Margins', 'Sinter Fines', 'Differentials', 'Seaborne', 'Prices', 'Premiums', 'Lumps', 'Scrap', 'Southeast Asia', 'HRC', 'JKT', 'Rebar', 'Spreads', 'Billet', 'Global', 'Ports', 'Shipments', 'Industrial', 'Macroeconomic', 'Freight', 'Costs', 'Australia', 'South America', 'Europe', 'Pellets', 'Ratios', 'Consumption', 'Financial', 'Slab', 'Cities', 'EAF', 'Coal', 'Coking Coal', 'Coke', 'Domestic', 'MENA', 'DRI', 'Currency', 'India', 'PCI', 'North America', 'CIS', 'Plate', 'Turkey', 'CRC', 'Sales', 'Wire Rod', 'Sinter Feed', 'HBI', 'Bunker', 'Traders', 'Utilization', 'Green', 'Premium']}
+
+all_values_list = [item for sublist in tags_dict.values() for item in sublist]
+
 
 selected_options = []
-#TODO : Make this as Dummy Full Dataframe.
-# st.session_state.data_to_query = pd.DataFrame()
 filtered_df=pd.DataFrame()
-filter_dict={}
 # formatted_system_message_python = "nothign"
 
 st.title(":blue[Market Connect (Natural Language)]")
 
 # Sidebar - Nested Multiselect for column and values
 with st.sidebar:
-    tags_selection = st.multiselect("Select Tags", tags_list, key = 'tags_select')
+    tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
 
     if tags_selection:
-        for tag in tags_selection:
-            tag_values=inner_dict[tag]
-            for outer_key,inner in outer_dict.items():
-                if tag in inner:
-                    filter_dict.update({outer_key:tag_values})
-        filtered_df = filter_dataframe_all_conditions(csv_data, filter_dict)
-        indicators_selection = st.multiselect("Select indicators", filtered_df['definitive_name'].to_list(), key='indicators_select')
+        filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection, tags_dict)
+        indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].to_list(), key='indicators_select')
         selected_options = indicators_selection
     else:
         selected_options = []
@@ -99,36 +95,18 @@ if submit_button:
     def filter_data(tags_selection):
         print(tags_selection)
         if tags_selection:
-            return master_data[master_data['definitive_name'].isin(tags_selection)]
+            return master_data[master_data['indicator_name'].isin(tags_selection)]
     # Filtered DataFrame
     if 'data_to_query' not in st.session_state:
         st.session_state.data_to_query = filter_data(selected_options)
     # Displaying filtered data (for reference, can be removed)
     st.write("Filtered Data:")
     st.write(st.session_state.data_to_query)
-            
-# SYSTEM_MESSAGE_PYTHON = """You are an AI assistant that is able to convert natural language into a properly formatted Python code including importing libraries, making any preprocessing required.  
-
-# - The data you will be querying is called is saved in a "data_to_query" dataframe.
-# - These are the columns along with their type of the data_to_query : ["DATA_DATE", "DATA_VALUE", "definitive_name"]
-# - The data_date format is DD-MM-YYYY. 
-# - Here are the values you need to filter the "definitive_name" of data_to_query : {selected_options_string} and answer.
-# - The aggregation has to be done on the DATA_VALUE column. """
-
-# formatted_system_message_python = SYSTEM_MESSAGE_PYTHON.format(columns_string = ", ".join(st.session_state.data_to_query.columns),
-#                                                         selected_options_string= selected_options,
-#                                                         filter_options = selected_options)
-
-# print(formatted_system_message_python)
-# print(st.session_state.data_to_query.head())
+    print(st.session_state.data_to_query.info())
 
 # OPENAI_API_KEY = "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"
 openai_api_key = "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"
 OPENAI_API_KEY = "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"
-# client = OpenAI(api_key=OPENAI_API_KEY)
-
-# if "openai_model" not in st.session_state:
-#     st.session_state["openai_model"] = "gpt-3.5-turbo"
 
 if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
