@@ -21,7 +21,7 @@ csv_data=pd.read_csv('all_indicators.csv')
 
 # master_data = pd.read_csv("master.csv")
 # master_data['DATA_DATE'] = pd.to_datetime(master_data['DATA_DATE'], format='%d-%m-%Y')
-master_data = pd.read_csv("indicator_values_2020_2023.csv")
+master_data = pd.read_csv("indicator_values_2023.csv")
 
 # Convert the date column to datetime format if it's not already
 master_data['date'] = pd.to_datetime(master_data['date'])
