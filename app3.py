@@ -75,7 +75,7 @@ selected_options = []
 filtered_df=pd.DataFrame()
 # formatted_system_message_python = "nothign"
 
-st.title(":blue[Market Connect (Natural Language)]")
+st.title(":blue[Market Connect VALE (Natural Language)]")
 
 # Sidebar - Nested Multiselect for column and values
 with st.sidebar:
