@@ -18,6 +18,10 @@ from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe
 #     outer_dict=json.load(jf)
 
 csv_data=pd.read_csv('all_indicators.csv')
+csv_data = csv_data.pivot_table(index='indicator_name', columns='tag_key', values='tag_value', aggfunc=lambda x: ', '.join(x))
+
+# Reset index to make 'indicator_name' a column again
+csv_data.reset_index(inplace=True)
 
 # master_data = pd.read_csv("master.csv")
 # master_data['DATA_DATE'] = pd.to_datetime(master_data['DATA_DATE'], format='%d-%m-%Y')
@@ -28,47 +32,33 @@ master_data['date'] = pd.to_datetime(master_data['date'])
 
 print(master_data.info())
 
-# # Drop the specified columns
-# df_dropped = base_data2.drop(['last_modified_date', 'calculated_flag'], axis=1)
-# master_data = df_dropped.dropna(subset=['value', 'date']).reset_index(drop = True)
-# master_data = master_data[master_data['date'].dt.year >= 2020]
+def filter_indicators_by_auto_tags(df, input_list):
+    columns_for_values = {}
+    for value in input_list:
+        for key, values in tags_dict.items():
+            if value in values:
+                columns_for_values.setdefault(key, []).append(value)
+                break
 
+    # Apply filters to the dataframe
+    # Use OR within each column for multiple values and AND among columns
+    filtered_conditions = []
+    for key, values in columns_for_values.items():
+        condition = df[key].str.contains('|'.join(values), na=False)
+        filtered_conditions.append(condition)
 
-def filter_indicators_by_auto_tags(dataframe, tags, value_to_column):
-    """
-    Filter indicator names based on a list of tags, automatically determining the corresponding columns.
-    
-    :param dataframe: Pandas DataFrame containing the data.
-    :param tags: List of tags to filter by.
-    :param value_to_column: Dictionary mapping values to their respective columns.
-    :return: DataFrame filtered by the specified criteria.
-    """
-    # Invert the value_to_column mapping
-    column_to_values = {}
-    for column, values in value_to_column.items():
-        for value in values:
-            column_to_values.setdefault(value, []).append(column)
+    # Combine all conditions with AND
+    final_condition = pd.concat(filtered_conditions, axis=1).all(axis=1)
 
-    # Identify columns for each tag
-    filters = {}
-    for tag in tags:
-        if tag in column_to_values:
-            for column in column_to_values[tag]:
-                if column in filters:
-                    filters[column].append(tag)
-                else:
-                    filters[column] = [tag]
+    # Apply the final condition to the transformed dataframe
+    filtered_result_with_multiple_values = df[final_condition]
 
-    # Apply filters
-    filtered_df = dataframe.copy()
-    for column, values in filters.items():
-        filtered_df = filtered_df[filtered_df[column].isin(values)]
-    return filtered_df
+    # Display the filtered dataframe
+    return filtered_result_with_multiple_values
 
-tags_dict = {'frequency': ['weekly', 'daily', 'monthly', 'quarterly', 'yearly', '10-day'], 'unit_name': ['MT', '%', 'USD/DMTU', 'USD/MT', 'USD/T', 'Index', 'RMB/T', 'Units', 'BRL', 'USD', 'RMB', 'EUR', 'AED', 'CHF', 'EGP', 'JPY', 'MZN', 'TRY', 'VND', 'MYR', 'EGP/T', 'INR/T', 'EUR/T', 'AED/T', 'RMB/WMT', 'T', 'Day', 'MT/Day', 'Billion RMB', 'PHP', 'BRL/T', 'JPY/T', 'TRY/T', 'KRW', 'GBP', 'MXN', 'THB', 'IRR', 'IDR', 'SAR', 'INR', 'SGD', 'CNY', 'ARS', 'CLP', 'TWD', '10KT', 'RMB/DMTU', 'RMB/toe', 'RUR/T', 'USD/ST'], 'unit_type': ['weight', 'generic', 'currency', 'time'], 'indicator_source_name': ['Mysteel', 'Argus', 'Platts', 'Bloomberg', 'MultiSource', 'Vale', 'Fastmarkets', 'Oxford', 'Tathya'], 'tag_value': ['China', 'Iron Ore', 'Stocks', 'Concentrates', 'Mines', 'Pig iron', 'Mills', 'Production', 'Steel', 'Metallics', 'BOF', 'Margins', 'Sinter Fines', 'Differentials', 'Seaborne', 'Prices', 'Premiums', 'Lumps', 'Scrap', 'Southeast Asia', 'HRC', 'JKT', 'Rebar', 'Spreads', 'Billet', 'Global', 'Ports', 'Shipments', 'Industrial', 'Macroeconomic', 'Freight', 'Costs', 'Australia', 'South America', 'Europe', 'Pellets', 'Ratios', 'Consumption', 'Financial', 'Slab', 'Cities', 'EAF', 'Coal', 'Coking Coal', 'Coke', 'Domestic', 'MENA', 'DRI', 'Currency', 'India', 'PCI', 'North America', 'CIS', 'Plate', 'Turkey', 'CRC', 'Sales', 'Wire Rod', 'Sinter Feed', 'HBI', 'Bunker', 'Traders', 'Utilization', 'Green', 'Premium']}
+tags_dict = {'region': ['China', 'Southeast Asia', 'JKT', 'Global', 'Australia', 'South America', 'Europe', 'MENA', 'India', 'North America', 'CIS', 'Turkey'], 'type': ['Iron Ore', 'Concentrates', 'Pig iron', 'Steel', 'Metallics', 'BOF', 'Sinter Fines', 'Lumps', 'Scrap', 'HRC', 'Rebar', 'Billet', 'Macroeconomic', 'Freight', 'Pellets', 'Slab', 'EAF', 'Coal', 'Coking Coal', 'Coke', 'DRI', 'PCI', 'Plate', 'CRC', 'Wire Rod', 'Sinter Feed', 'HBI', 'Bunker', 'Green'], 'frequency': ['weekly', 'daily', 'monthly', 'quarterly', 'yearly', '10-day'], 'source': ['Mysteel', 'Argus', 'Platts', 'Bloomberg', 'MultiSource', 'Vale', 'Fastmarkets', 'Oxford', 'Tathya'], 'functionality': ['Stocks', 'Mines', 'Mills', 'Production', 'Margins', 'Differentials', 'Seaborne', 'Prices', 'Premiums', 'Spreads', 'Ports', 'Shipments', 'Industrial', 'Costs', 'Ratios', 'Consumption', 'Financial', 'Cities', 'Domestic', 'Currency', 'Sales', 'Traders', 'Utilization', 'Premium']}
 
 all_values_list = [item for sublist in tags_dict.values() for item in sublist]
-
 
 selected_options = []
 filtered_df=pd.DataFrame()
@@ -87,7 +77,7 @@ st.title(":blue[Market Connect VALE (Natural Language)]")
 with st.sidebar:
     tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
     if tags_selection:
-        filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection, tags_dict)
+        filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection)
         indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
         selected_options = indicators_selection
     else:
@@ -108,12 +98,7 @@ if submit_button or st.session_state.submit_button_clicked:
             return master_data[master_data['indicator_name'].isin(tags_selection)]
         else:
             return pd.DataFrame()
-            
-    # Filtered DataFrame
-
-    # if 'data_to_query' not in st.session_state:
-    #     st.session_state.data_to_query = filter_data(selected_options)
-    # Displaying filtered data (for reference, can be removed)
+        
     st.write("Filtered Data:")
     data_to_query = filter_data(selected_options)
     st.write(data_to_query)
