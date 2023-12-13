@@ -132,25 +132,35 @@ if "messages" not in st.session_state or st.sidebar.button("Clear conversation h
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input(placeholder="What is this data about?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    st.chat_message("user").write(prompt)
+if len(tags_selection)> 0:
+    if prompt := st.chat_input(placeholder="What is this data about?",key="with_tag"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
 
-    if not openai_api_key:
-        st.info("Please add your OpenAI API key to continue.")
-        st.stop()
+        if not openai_api_key:
+            st.info("Please add your OpenAI API key to continue.")
+            st.stop()
 
-    llm = ChatOpenAI(
-        temperature=0, openai_api_key=openai_api_key, streaming=True
-    )
-    df = data_to_query
-    pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
-                        df, 
-                        verbose=True)
+        llm = ChatOpenAI(
+            temperature=0, openai_api_key=openai_api_key, streaming=True
+        )
+        df = data_to_query
+        pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
+                            df, 
+                            verbose=True)
 
-    with st.chat_message("assistant"):
-        st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
-        response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.write(response)
-    
+        with st.chat_message("assistant"):
+            st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+            response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.write(response)
+
+else:
+    if prompt := st.chat_input(placeholder="Test", key="without_tag"): 
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
+        print("Readche here")
+        with st.chat_message("assistant"):
+            #st.session_state.messages.append({"role": "assistant", "content": "this hai "})
+            st.write("Please select indicator to continue.")
+        
