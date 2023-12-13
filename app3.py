@@ -130,7 +130,7 @@ if len(tags_selection)> 0:
             temperature=0, openai_api_key=openai_api_key, streaming=True
         )
         df = data_to_query
-        pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
+        pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY, model="gpt-4-0613"), 
                             df, 
                             verbose=True)
 
