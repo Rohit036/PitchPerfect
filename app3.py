@@ -95,7 +95,9 @@ if submit_button or st.session_state.submit_button_clicked:
     def filter_data(tags_selection):
         print(tags_selection)
         if tags_selection:
-            return master_data[master_data['indicator_name'].isin(tags_selection)]
+            tag_feature_merged = pd.merge(master_data[master_data['indicator_name'].isin(tags_selection)].drop(["frequency"], axis=1), csv_data, on="indicator_name", how="left")
+            return tag_feature_merged
+        
         else:
             return pd.DataFrame()
         
