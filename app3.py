@@ -63,7 +63,6 @@ def filter_indicators_by_auto_tags(dataframe, tags, value_to_column):
     filtered_df = dataframe.copy()
     for column, values in filters.items():
         filtered_df = filtered_df[filtered_df[column].isin(values)]
-
     return filtered_df
 
 tags_dict = {'frequency': ['weekly', 'daily', 'monthly', 'quarterly', 'yearly', '10-day'], 'unit_name': ['MT', '%', 'USD/DMTU', 'USD/MT', 'USD/T', 'Index', 'RMB/T', 'Units', 'BRL', 'USD', 'RMB', 'EUR', 'AED', 'CHF', 'EGP', 'JPY', 'MZN', 'TRY', 'VND', 'MYR', 'EGP/T', 'INR/T', 'EUR/T', 'AED/T', 'RMB/WMT', 'T', 'Day', 'MT/Day', 'Billion RMB', 'PHP', 'BRL/T', 'JPY/T', 'TRY/T', 'KRW', 'GBP', 'MXN', 'THB', 'IRR', 'IDR', 'SAR', 'INR', 'SGD', 'CNY', 'ARS', 'CLP', 'TWD', '10KT', 'RMB/DMTU', 'RMB/toe', 'RUR/T', 'USD/ST'], 'unit_type': ['weight', 'generic', 'currency', 'time'], 'indicator_source_name': ['Mysteel', 'Argus', 'Platts', 'Bloomberg', 'MultiSource', 'Vale', 'Fastmarkets', 'Oxford', 'Tathya'], 'tag_value': ['China', 'Iron Ore', 'Stocks', 'Concentrates', 'Mines', 'Pig iron', 'Mills', 'Production', 'Steel', 'Metallics', 'BOF', 'Margins', 'Sinter Fines', 'Differentials', 'Seaborne', 'Prices', 'Premiums', 'Lumps', 'Scrap', 'Southeast Asia', 'HRC', 'JKT', 'Rebar', 'Spreads', 'Billet', 'Global', 'Ports', 'Shipments', 'Industrial', 'Macroeconomic', 'Freight', 'Costs', 'Australia', 'South America', 'Europe', 'Pellets', 'Ratios', 'Consumption', 'Financial', 'Slab', 'Cities', 'EAF', 'Coal', 'Coking Coal', 'Coke', 'Domestic', 'MENA', 'DRI', 'Currency', 'India', 'PCI', 'North America', 'CIS', 'Plate', 'Turkey', 'CRC', 'Sales', 'Wire Rod', 'Sinter Feed', 'HBI', 'Bunker', 'Traders', 'Utilization', 'Green', 'Premium']}
@@ -75,12 +74,18 @@ selected_options = []
 filtered_df=pd.DataFrame()
 # formatted_system_message_python = "nothign"
 
+### callback methods for buttons to preserve the state
+def submit_button_callback():
+    st.session_state.submit_button_clicked=True
+def clear_button_callback():
+    st.session_state.submit_button_clicked=False
+
+### Title of the app
 st.title(":blue[Market Connect VALE (Natural Language)]")
 
 # Sidebar - Nested Multiselect for column and values
 with st.sidebar:
     tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
-
     if tags_selection:
         filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection, tags_dict)
         indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
@@ -88,27 +93,40 @@ with st.sidebar:
     else:
         selected_options = []
     
-    submit_button = st.button("Submit Selection")
+    ## adding button click to session to preserve state 
+    if "submit_button_clicked" not in st.session_state:
+        st.session_state.submit_button_clicked=False
+    submit_button = st.button("Submit Selection",key='button_submit',on_click=submit_button_callback)
+data_to_query=pd.DataFrame()
 
-if submit_button:
+## check if button click is true since default session state for button becomes false on refresh 
+if submit_button or st.session_state.submit_button_clicked:
     # @st.cache_data
     def filter_data(tags_selection):
         print(tags_selection)
         if tags_selection:
             return master_data[master_data['indicator_name'].isin(tags_selection)]
+        else:
+            return pd.DataFrame()
+            
     # Filtered DataFrame
-    if 'data_to_query' not in st.session_state:
-        st.session_state.data_to_query = filter_data(selected_options)
+
+    # if 'data_to_query' not in st.session_state:
+    #     st.session_state.data_to_query = filter_data(selected_options)
     # Displaying filtered data (for reference, can be removed)
     st.write("Filtered Data:")
-    st.write(st.session_state.data_to_query)
-    print(st.session_state.data_to_query.info())
+    data_to_query = filter_data(selected_options)
+    st.write(data_to_query)
+    # st.write(st.session_state.data_to_query)
+    
 
 # OPENAI_API_KEY = "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"
 openai_api_key = "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"
 OPENAI_API_KEY = "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"
 
-if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
+
+
+if "messages" not in st.session_state or st.sidebar.button("Clear conversation history",on_click=clear_button_callback):
     st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
 for msg in st.session_state.messages:
@@ -125,7 +143,7 @@ if prompt := st.chat_input(placeholder="What is this data about?"):
     llm = ChatOpenAI(
         temperature=0, openai_api_key=openai_api_key, streaming=True
     )
-    df = st.session_state.data_to_query
+    df = data_to_query
     pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
                         df, 
                         verbose=True)
