@@ -75,79 +75,82 @@ st.title(":blue[Market Connect VALE (Natural Language)]")
 
 # Sidebar - Nested Multiselect for column and values
 with st.sidebar:
-    tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
-    if tags_selection:
-        filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection)
-        indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
-        selected_options = indicators_selection
-    else:
-        selected_options = []
-    
-    ## adding button click to session to preserve state 
-    if "submit_button_clicked" not in st.session_state:
-        st.session_state.submit_button_clicked=False
-    submit_button = st.button("Submit Selection",key='button_submit',on_click=submit_button_callback)
-data_to_query=pd.DataFrame()
-
-## check if button click is true since default session state for button becomes false on refresh 
-if submit_button or st.session_state.submit_button_clicked:
-    # @st.cache_data
-    def filter_data(tags_selection):
-        print(tags_selection)
+    selected_tab = st.radio("Select an option to query", ["With Indicators", "Without Indicators"])
+if selected_tab == "With Indicators":
+    with st.sidebar:
+        tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
         if tags_selection:
-            tag_feature_merged = pd.merge(master_data[master_data['indicator_name'].isin(tags_selection)].drop(["frequency"], axis=1), csv_data, on="indicator_name", how="left")
-            return tag_feature_merged
-        
+            filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection)
+            indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
+            selected_options = indicators_selection
         else:
-            return pd.DataFrame()
+            selected_options = []
         
-    st.write("Filtered Data:")
-    data_to_query = filter_data(selected_options)
-    st.write(data_to_query)
-    # st.write(st.session_state.data_to_query)
+        ## adding button click to session to preserve state 
+        if "submit_button_clicked" not in st.session_state:
+            st.session_state.submit_button_clicked=False
+        submit_button = st.button("Submit Selection",key='button_submit',on_click=submit_button_callback)
+    data_to_query=pd.DataFrame()
+
+    ## check if button click is true since default session state for button becomes false on refresh 
+    if submit_button or st.session_state.submit_button_clicked:
+        # @st.cache_data
+        def filter_data(tags_selection):
+            print(tags_selection)
+            if tags_selection:
+                tag_feature_merged = pd.merge(master_data[master_data['indicator_name'].isin(tags_selection)].drop(["frequency"], axis=1), csv_data, on="indicator_name", how="left")
+                return tag_feature_merged
+            
+            else:
+                return pd.DataFrame()
+        
+        st.write("Filtered Data:")
+        data_to_query = filter_data(selected_options)
+        st.write(data_to_query)
+        # st.write(st.session_state.data_to_query)
     
 
-# OPENAI_API_KEY = "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"
-openai_api_key = "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"
-OPENAI_API_KEY = "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"
+    # OPENAI_API_KEY = "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"
+    openai_api_key = "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"
+    OPENAI_API_KEY = "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"
 
+    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history",on_click=clear_button_callback):
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-if "messages" not in st.session_state or st.sidebar.button("Clear conversation history",on_click=clear_button_callback):
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+    if len(tags_selection)> 0:
+        if prompt := st.chat_input(placeholder="What is this data about?",key="with_tag"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.chat_message("user").write(prompt)
 
-for msg in st.session_state.messages:
-    st.chat_message(msg["role"]).write(msg["content"])
+            if not openai_api_key:
+                st.info("Please add your OpenAI API key to continue.")
+                st.stop()
 
-if len(tags_selection)> 0:
-    if prompt := st.chat_input(placeholder="What is this data about?",key="with_tag"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
+            llm = ChatOpenAI(
+                temperature=0, openai_api_key=openai_api_key, streaming=True
+            )
+            df = data_to_query
+            pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
+                                df, 
+                                verbose=True)
 
-        if not openai_api_key:
-            st.info("Please add your OpenAI API key to continue.")
-            st.stop()
+            with st.chat_message("assistant"):
+                st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+                response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.write(response)
 
-        llm = ChatOpenAI(
-            temperature=0, openai_api_key=openai_api_key, streaming=True
-        )
-        df = data_to_query
-        pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
-                            df, 
-                            verbose=True)
-
-        with st.chat_message("assistant"):
-            st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
-            response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.write(response)
-
-else:
-    if prompt := st.chat_input(placeholder="Test", key="without_tag"): 
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
-        print("Readche here")
-        with st.chat_message("assistant"):
-            #st.session_state.messages.append({"role": "assistant", "content": "this hai "})
-            st.write("Please select indicator to continue.")
+    else:
+        if prompt := st.chat_input(placeholder="Test", key="without_tag"): 
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.chat_message("user").write(prompt)
+            print("Readche here")
+            with st.chat_message("assistant"):
+                #st.session_state.messages.append({"role": "assistant", "content": "this hai "})
+                st.write("Please select indicator to continue.")
+elif selected_tab == "Without Indicators":
+    st.write("Query without selecting indicators")        
         
