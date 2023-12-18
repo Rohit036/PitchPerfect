@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import json
 # from openai import OpenAI
-import streamlit as st
-import pandas as pd
-import json
 import re
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
@@ -70,6 +67,9 @@ def submit_button_callback():
 def clear_button_callback():
     st.session_state.submit_button_clicked=False
 
+# OPENAI_API_KEY = "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"
+openai_api_key = "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"
+OPENAI_API_KEY = "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"
 ### Title of the app
 st.title(":blue[Market Connect VALE (Natural Language)]")
 
@@ -100,7 +100,6 @@ if selected_tab == "With Indicators":
             if tags_selection:
                 tag_feature_merged = pd.merge(master_data[master_data['indicator_name'].isin(tags_selection)].drop(["frequency"], axis=1), csv_data, on="indicator_name", how="left")
                 return tag_feature_merged
-            
             else:
                 return pd.DataFrame()
         
@@ -109,11 +108,6 @@ if selected_tab == "With Indicators":
         st.write(data_to_query)
         # st.write(st.session_state.data_to_query)
     
-
-    # OPENAI_API_KEY = "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"
-    openai_api_key = "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"
-    OPENAI_API_KEY = "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"
-
     if "messages" not in st.session_state or st.sidebar.button("Clear conversation history",on_click=clear_button_callback):
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
@@ -151,6 +145,36 @@ if selected_tab == "With Indicators":
             with st.chat_message("assistant"):
                 #st.session_state.messages.append({"role": "assistant", "content": "this hai "})
                 st.write("Please select indicator to continue.")
+
 elif selected_tab == "Without Indicators":
-    st.write("Query without selecting indicators")        
+    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}] 
+
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+    if prompt := st.chat_input(placeholder="Enter your query"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.chat_message("user").write(prompt)
+
+            if not openai_api_key:
+                st.info("Please add your OpenAI API key to continue.")
+                st.stop()
+
+            llm = ChatOpenAI(
+                temperature=0, openai_api_key=openai_api_key, streaming=True
+            )
+            df = csv_data
+            pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
+                                df, 
+                                verbose=True)
+
+            with st.chat_message("assistant"):
+                st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+                response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.write(response)
+
+        
+      
         
