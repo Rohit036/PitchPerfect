@@ -148,7 +148,13 @@ if selected_tab == "With Indicators":
 
 elif selected_tab == "Without Indicators":
     if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
-        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}] 
+        st.session_state["messages"] = [{"role": "assistant", 
+                                         "content": """Step 1. Match the indicator using contains in the indicator_name column of the dataframe. Ignore the case while matching.
+                                                    Step 2. Ignore the text after special character like $ in the column name while matching.  
+                                                    Step 3. Put the filter based on the above indicator_name selected and sort the values on date.
+                                                    Step 4. Run the right mathematical operation based on above step 3 selection.
+                                                    Step 5. For latest/maximum/current questions, sort_values based on date column only and answer for the highest date.
+                                                    """}] 
 
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
