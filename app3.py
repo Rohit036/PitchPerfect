@@ -153,8 +153,9 @@ if selected_tab == "With Indicators":
                 st.write("Please select indicator to continue.")
 
 elif selected_tab == "Without Indicators":
-    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):        
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
+        st.session_state["messages"] = [{"role": "assistant", 
+                                         "content": """How can I help you?"""}] 
         
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
