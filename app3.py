@@ -67,15 +67,27 @@ def submit_button_callback():
 def clear_button_callback():
     st.session_state.submit_button_clicked=False
 
+def reset_session():
+    st.session_state.clear()
+
 # OPENAI_API_KEY = "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"
 openai_api_key = "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"
 OPENAI_API_KEY = "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"
 ### Title of the app
 st.title(":blue[Market Connect VALE (Natural Language)]")
 
+# Initialize session state
+if 'selected_tab' not in st.session_state:
+    st.session_state.selected_tab = None
+
 # Sidebar - Nested Multiselect for column and values
 with st.sidebar:
     selected_tab = st.radio("Select an option to query", ["With Indicators", "Without Indicators"])
+    if selected_tab != st.session_state.selected_tab:
+        # Reset the session
+        reset_session()
+        # Update the session state with the new radio button value
+        st.session_state.selected_tab = selected_tab
 if selected_tab == "With Indicators":
     with st.sidebar:
         tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
