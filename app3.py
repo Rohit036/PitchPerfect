@@ -1,33 +1,26 @@
 import streamlit as st
+from difflib import get_close_matches
+import pandas as pd
+from rapidfuzz import process, fuzz, utils
+# import adal
+import struct
+# import pyodbc
 import pandas as pd
 import json
-# from openai import OpenAI
 import re
 from langchain.callbacks import StreamlitCallbackHandler
-from langchain.chat_models import ChatOpenAI
 from langchain.llms import OpenAI
+from langchain.chat_models import AzureChatOpenAI
 
 from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 
-# with open('tags.json','r') as jf:
-#     outer_dict=json.load(jf)
-
-csv_data=pd.read_csv('all_indicators.csv')
-csv_data = csv_data.pivot_table(index='indicator_name', columns='tag_key', values='tag_value', aggfunc=lambda x: ', '.join(x))
+csv_data_indi=pd.read_csv('all_indicators.csv')
+csv_data_indi = csv_data_indi.pivot_table(index='indicator_name', columns='tag_key', values='tag_value', aggfunc=lambda x: ', '.join(x))
 
 # Reset index to make 'indicator_name' a column again
-csv_data.reset_index(inplace=True)
-
-# master_data = pd.read_csv("master.csv")
-# master_data['DATA_DATE'] = pd.to_datetime(master_data['DATA_DATE'], format='%d-%m-%Y')
-master_data = pd.read_csv("indicator_values_2023.csv")
-
-# Convert the date column to datetime format if it's not already
-master_data['date'] = pd.to_datetime(master_data['date'])
-
-print(master_data.info())
+csv_data_indi.reset_index(inplace=True)
 
 def filter_indicators_by_auto_tags(df, input_list):
     columns_for_values = {}
@@ -59,141 +52,76 @@ all_values_list = [item for sublist in tags_dict.values() for item in sublist]
 
 selected_options = []
 filtered_df=pd.DataFrame()
-# formatted_system_message_python = "nothign"
 
 ### callback methods for buttons to preserve the state
-def submit_button_callback():
-    st.session_state.submit_button_clicked=True
-def clear_button_callback():
-    st.session_state.submit_button_clicked=False
+def submit_button_callback_indi():
+    st.session_state.submit_button_clicked_indi=True
+def clear_button_callback_indi():
+    st.session_state.submit_button_clicked_indi=False
 
-def reset_session():
-    st.session_state.clear()
+st.title(":blue[Market Connect (Without Indicators)]")
 
-# OPENAI_API_KEY = "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"
-openai_api_key = "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"
-OPENAI_API_KEY = "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"
-### Title of the app
-st.title(":blue[Market Connect VALE (Natural Language)]")
-
-# Initialize session state
-if 'selected_tab' not in st.session_state:
-    st.session_state.selected_tab = None
-
-# Sidebar - Nested Multiselect for column and values
+# Sidebar
 with st.sidebar:
-    selected_tab = st.radio("Select an option to query", ["With Indicators", "Without Indicators"])
-    if selected_tab != st.session_state.selected_tab:
-        # Reset the session
-        reset_session()
-        # Update the session state with the new radio button value
-        st.session_state.selected_tab = selected_tab
-if selected_tab == "With Indicators":
-    with st.sidebar:
-        tags_selection = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
-        if tags_selection:
-            filtered_df = filter_indicators_by_auto_tags(csv_data, tags_selection)
-            indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select')
-            selected_options = indicators_selection
-        else:
-            selected_options = []
-        
-        ## adding button click to session to preserve state 
-        if "submit_button_clicked" not in st.session_state:
-            st.session_state.submit_button_clicked=False
-        submit_button = st.button("Submit Selection",key='button_submit',on_click=submit_button_callback)
-    data_to_query=pd.DataFrame()
-
-    ## check if button click is true since default session state for button becomes false on refresh 
-    if submit_button or st.session_state.submit_button_clicked:
-        # @st.cache_data
-        def filter_data(tags_selection):
-            print(tags_selection)
-            if tags_selection:
-                tag_feature_merged = pd.merge(master_data[master_data['indicator_name'].isin(tags_selection)].drop(["frequency"], axis=1), csv_data, on="indicator_name", how="left")
-                return tag_feature_merged
-            else:
-                return pd.DataFrame()
-        
-        st.write("Filtered Data:")
-        data_to_query = filter_data(selected_options)
-        st.write(data_to_query)
-        # st.write(st.session_state.data_to_query)
-    
-    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history",on_click=clear_button_callback):
-        st.session_state["messages"] = [{"role": "assistant", 
-                                         "content": """Step 1. Match the indicator using contains in the indicator_name column of the dataframe. Ignore the case while matching.
-                                                    Step 2. Ignore the text after special character like $ in the column name while matching.  
-                                                    Step 3. Put the filter based on the above indicator_name selected and sort the values on date.
-                                                    Step 4. Run the right mathematical operation based on above step 3 selection.
-                                                    Step 5. For latest/maximum/current questions, sort_values based on date column only and answer for the highest date.
-                                                    """}] 
-
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
-
-    if len(tags_selection)> 0:
-        if prompt := st.chat_input(placeholder="What is this data about?",key="with_tag"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.chat_message("user").write(prompt)
-
-            if not openai_api_key:
-                st.info("Please add your OpenAI API key to continue.")
-                st.stop()
-
-            llm = ChatOpenAI(
-                temperature=0, openai_api_key=openai_api_key, streaming=True
-            )
-            df = data_to_query
-            pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
-                                df, 
-                                verbose=True)
-
-            with st.chat_message("assistant"):
-                st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
-                response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.write(response)
-
+    tags_selection_indi = st.multiselect("Select Tags", all_values_list, key = 'tags_select')
+    if tags_selection_indi:
+        filtered_df = filter_indicators_by_auto_tags(csv_data_indi, tags_selection_indi)
+        indicators_selection = st.multiselect("Select indicators", filtered_df['indicator_name'].unique().tolist(), key='indicators_select_indi')
+        selected_options = indicators_selection
     else:
-        if prompt := st.chat_input(placeholder="Test", key="without_tag"): 
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.chat_message("user").write(prompt)
-            print("Readche here")
-            with st.chat_message("assistant"):
-                #st.session_state.messages.append({"role": "assistant", "content": "this hai "})
-                st.write("Please select indicator to continue.")
+        selected_options = []
+    
+    ## adding button click to session to preserve state 
+    if "submit_button_clicked" not in st.session_state:
+        st.session_state.submit_button_clicked=False
+    submit_button = st.button("Submit Selection",key='button_submit',on_click=submit_button_callback_indi)
 
-elif selected_tab == "Without Indicators":
-    if "messages" not in st.session_state or st.sidebar.button("Clear conversation history"):
-        st.session_state["messages"] = [{"role": "assistant", 
-                                         "content": """How can I help you?"""}] 
-        
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
+data_to_query_indi = pd.DataFrame()
+# Main Page
+if submit_button_callback_indi or st.session_state.submit_button_clicked_indi:
+    def filter_data_indi(tags_selection_indi):
+        print(tags_selection_indi)
+        if tags_selection_indi:
+            df_dropped_indi = pd.read_csv("indicator_values_2023.csv")
+            df_dropped_indi = pd.merge(df_dropped_indi[df_dropped_indi['indicator_name'].isin(tags_selection_indi)].drop(["frequency"], axis=1), csv_data_indi, on="indicator_name", how="left")
+            df_dropped_indi['date'] = pd.to_datetime(df_dropped_indi['date'])
+            df_dropped_indi = df_dropped_indi.sort_values(by="date")
+            return df_dropped_indi
+        else:
+            return pd.DataFrame()
 
-    if prompt := st.chat_input(placeholder="Enter your query"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.chat_message("user").write(prompt)
+    st.write("Filtered Data:")
+    data_to_query_indi = filter_data_indi(selected_options)
+    st.write(data_to_query_indi)
 
-            if not openai_api_key:
-                st.info("Please add your OpenAI API key to continue.")
-                st.stop()
+if "messages_indi" not in st.session_state or st.sidebar.button("Clear conversation history", key="clear_cov_indi", on_click=clear_button_callback_indi):
+    st.session_state["messages_indi"] = [{"role": "assistant", 
+                                    "content": """Step 1. Match the indicator using contains in the indicator_name column of the dataframe. Ignore the case while matching.
+                                                Step 2. Ignore the text after special character like $ in the column name while matching.  
+                                                Step 3. Put the filter based on the above indicator_name selected and sort the values on date.
+                                                Step 4. Run the right mathematical operation based on above step 3 selection.
+                                                Step 5. For latest/maximum/current questions, sort_values based on date column only and answer for the highest date. 
+                                                Step 6. If there are multiple values for any answer, include both in your asnwer with difference.
+                                                """}]
 
-            llm = ChatOpenAI(
-                temperature=0, openai_api_key=openai_api_key, streaming=True
-            )
-            df = csv_data
-            pandas_df_agent = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY), 
-                                df, 
-                                verbose=True)
+for msg in st.session_state.messages_indi:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-            with st.chat_message("assistant"):
-                st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
-                response = pandas_df_agent.run(st.session_state.messages, callbacks=[st_cb])
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.write(response)
 
-        
-      
-        
+if prompt_indi := st.chat_input(placeholder="What is this data about?",key="indi"):
+    st.session_state.messages_indi.append({"role": "user", "content": prompt_indi})
+    st.chat_message("user").write(prompt_indi)
+
+    df_indi = data_to_query_indi
+
+    OPENAI_API_KEY_PER = "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"
+    
+    pandas_df_agent_indi = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY_PER), 
+                        df_indi, 
+                        verbose=True)
+
+    with st.chat_message("assistant"):
+        st_cb_indi = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+        response_indi = pandas_df_agent_indi.run(st.session_state.messages_indi, callbacks=[st_cb_indi])
+        st.session_state.messages_indi.append({"role": "assistant", "content": response_indi})
+        st.write(response_indi)
