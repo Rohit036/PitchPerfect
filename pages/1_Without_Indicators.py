@@ -34,7 +34,7 @@ predefined_list = all_indicators_combined_tags["indicator_name"].to_list()
 
 def find_close_matches(input_string):
     # Find the closest matches in the predefined list to the input string
-    temp = [match[0] for match in process.extract(input_string, all_indicators_combined_tags["indicator_feature_combined"], scorer=fuzz.WRatio, limit=10)]
+    temp = [match[0] for match in process.extract(input_string, all_indicators_combined_tags["indicator_feature_combined"], scorer=fuzz.WRatio, limit=5)]
     temp = match_values_and_get_names(temp)
     return temp
 
