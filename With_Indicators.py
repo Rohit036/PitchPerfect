@@ -116,7 +116,7 @@ if prompt_indi := st.chat_input(placeholder="What is this data about?",key="indi
 
     OPENAI_API_KEY_PER = "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"
     
-    pandas_df_agent_indi = create_pandas_dataframe_agent(OpenAI(temperature=0, openai_api_key = OPENAI_API_KEY_PER), 
+    pandas_df_agent_indi = create_pandas_dataframe_agent(OpenAI(temperature=0, model_name="gpt-3.5-turbo-instruct", openai_api_key = OPENAI_API_KEY_PER), 
                         df_indi, 
                         verbose=True)
 
